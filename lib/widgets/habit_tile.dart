@@ -5,12 +5,14 @@ import '../models/habit.dart';
 class HabitTile extends StatelessWidget {
   final Habit habit;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
   final Function(bool?) onChanged;
 
   const HabitTile({
     super.key,
     required this.habit,
     required this.onDelete,
+    required this.onTap,
     required this.onChanged,
   });
 
@@ -33,6 +35,8 @@ class HabitTile extends StatelessWidget {
       ),
 
       child: ListTile(
+        onTap: onTap,
+        
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 10,

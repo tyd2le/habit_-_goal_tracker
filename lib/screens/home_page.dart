@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'calendar_page.dart';
+
 import '../models/habit.dart';
 import '../services/storage_service.dart';
 import '../widgets/habit_tile.dart';
+
+String todayString() {
+  final now = DateTime.now();
+
+  return '${now.year}-'
+      '${now.month.toString().padLeft(2, '0')}-'
+      '${now.day.toString().padLeft(2, '0')}';
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,15 +68,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   void toggleHabit(int index, bool? value) {
+    final today = todayString();
+
     setState(() {
       habits[index].completed = value ?? false;
 
       if (value == true) {
         habits[index].streak++;
+
+        if (!habits[index]
+            .completedDays
+            .contains(today)) {
+          habits[index]
+              .completedDays
+              .add(today);
+        }
       } else {
         if (habits[index].streak > 0) {
           habits[index].streak--;
         }
+
+        habits[index]
+            .completedDays
+            .remove(today);
       }
     });
 
@@ -190,6 +214,18 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       return HabitTile(
                         habit: habits[index],
+
+                        onTap: () {
+                          Navigator.push(
+                            context,
+
+                            MaterialPageRoute(
+                              builder: (_) => CalendarPage(
+                                habit: habits[index],
+                              ),
+                            ),
+                          );
+                        },
 
                         onDelete: () {
                           deleteHabit(index);
