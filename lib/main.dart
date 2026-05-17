@@ -8,10 +8,12 @@ void main() {
 class Habit {
   String name;
   bool completed;
+  int streak;
 
   Habit({
     required this.name,
     this.completed = false,
+    this.streak = 0,
   });
 }
 
@@ -53,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
 
     List<String> savedHabits = habits.map((habit) {
-      return '${habit.name}|${habit.completed}';
+      return '${habit.name}|${habit.completed}|${habit.streak}';
     }).toList();
 
     await prefs.setStringList('habits', savedHabits);
@@ -72,6 +74,7 @@ class _HomePageState extends State<HomePage> {
         return Habit(
           name: parts[0],
           completed: parts[1] == 'true',
+          streak: int.parse(parts[2]),
         );
       }).toList();
     });
@@ -104,6 +107,14 @@ class _HomePageState extends State<HomePage> {
   void toggleHabit(int index, bool? value) {
     setState(() {
       habits[index].completed = value ?? false;
+
+      if (value == true) {
+        habits[index].streak++;
+      } else {
+        if (habits[index].streak > 0) {
+          habits[index].streak--;
+        }
+      }
     });
 
     saveHabits();
@@ -193,6 +204,7 @@ class _HomePageState extends State<HomePage> {
                               toggleHabit(index, value);
                             },
                           ),
+
                           title: Text(
                             habit.name,
                             style: TextStyle(
@@ -201,6 +213,11 @@ class _HomePageState extends State<HomePage> {
                                   : null,
                             ),
                           ),
+
+                          subtitle: Text(
+                            '🔥 Streak: ${habit.streak}',
+                          ),
+
                           trailing: IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () {
