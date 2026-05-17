@@ -16,12 +16,28 @@ class HabitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+
       margin: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
+        horizontal: 12,
+        vertical: 6,
       ),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+
+        color: habit.completed
+            ? Colors.green.withOpacity(0.15)
+            : Theme.of(context).cardColor,
+      ),
+
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 10,
+        ),
+
         leading: Checkbox(
           value: habit.completed,
           onChanged: onChanged,
@@ -29,19 +45,29 @@ class HabitTile extends StatelessWidget {
 
         title: Text(
           habit.name,
+
           style: TextStyle(
+            fontSize: 18,
+
+            fontWeight: FontWeight.w600,
+
             decoration: habit.completed
                 ? TextDecoration.lineThrough
                 : null,
           ),
         ),
 
-        subtitle: Text(
-          '🔥 Streak: ${habit.streak}',
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+
+          child: Text(
+            '🔥 Streak: ${habit.streak}',
+            style: const TextStyle(fontSize: 15),
+          ),
         ),
 
         trailing: IconButton(
-          icon: const Icon(Icons.delete),
+          icon: const Icon(Icons.delete_outline),
           onPressed: onDelete,
         ),
       ),

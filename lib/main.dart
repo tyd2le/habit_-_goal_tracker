@@ -16,8 +16,24 @@ class HabitApp extends StatelessWidget {
 
       title: 'Habit Goal Tracker',
 
+      themeMode: ThemeMode.system,
+
       theme: ThemeData(
-        colorSchemeSeed: Colors.green,
+        useMaterial3: true,
+
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.light,
+        ),
+      ),
+
+      darkTheme: ThemeData(
+        useMaterial3: true,
+
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.dark,
+        ),
       ),
 
       home: const HomePage(),

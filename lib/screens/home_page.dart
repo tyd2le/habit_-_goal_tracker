@@ -122,21 +122,57 @@ class _HomePageState extends State<HomePage> {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            margin: const EdgeInsets.all(10),
+
+            padding: const EdgeInsets.all(24),
+
+            margin: const EdgeInsets.all(12),
+
             decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
+
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade400,
+                  Colors.green.shade700,
+                ],
+              ),
             ),
 
-            child: Text(
-              'Completed today: '
-              '${completedHabitsCount()}/${habits.length}',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
 
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              children: [
+                const Text(
+                  'Today Progress',
+
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 18,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  '${completedHabitsCount()}/${habits.length}',
+
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 42,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                LinearProgressIndicator(
+                  value: habits.isEmpty
+                      ? 0
+                      : completedHabitsCount() / habits.length,
+
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ],
             ),
           ),
 
