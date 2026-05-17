@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const HabitApp());
@@ -28,12 +29,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<String> habits = [
-    'Workout',
-    'Read Quran',
-  ];
+  List<String> habits = [];
 
   final TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadHabits();
+  }
+
+  Future<void> loadHabits() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      habits = prefs.getStringList('habits') ?? [];
+    });
+  }
+
+  Future<void> saveHabits() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('habits', habits);
+  }
 
   void addHabit() {
     if (controller.text.trim().isEmpty) return;
@@ -42,8 +59,18 @@ class _HomePageState extends State<HomePage> {
       habits.add(controller.text.trim());
     });
 
+    saveHabits();
+
     controller.clear();
     Navigator.pop(context);
+  }
+
+  void deleteHabit(int index) {
+    setState(() {
+      habits.removeAt(index);
+    });
+
+    saveHabits();
   }
 
   void showAddHabitDialog() {
@@ -73,12 +100,6 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
-  }
-
-  void deleteHabit(int index) {
-    setState(() {
-      habits.removeAt(index);
-    });
   }
 
   @override
