@@ -31,6 +31,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadHabits();
+
+    resetHabitsForNewDay();
   }
 
   Future<void> loadHabits() async {
@@ -71,26 +73,22 @@ class _HomePageState extends State<HomePage> {
     final today = todayString();
 
     setState(() {
-      habits[index].completed = value ?? false;
+      final habit = habits[index];
 
       if (value == true) {
-        habits[index].streak++;
+        if (habit.lastCompletedDate != today) {
+          habit.streak++;
 
-        if (!habits[index]
-            .completedDays
-            .contains(today)) {
-          habits[index]
-              .completedDays
-              .add(today);
+          habit.lastCompletedDate = today;
+
+          if (!habit.completedDays.contains(today)) {
+            habit.completedDays.add(today);
+          }
         }
+
+        habit.completed = true;
       } else {
-        if (habits[index].streak > 0) {
-          habits[index].streak--;
-        }
-
-        habits[index]
-            .completedDays
-            .remove(today);
+        habit.completed = false;
       }
     });
 
@@ -127,6 +125,25 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  void resetHabitsForNewDay() {
+    final today = todayString();
+
+    bool changed = false;
+
+    for (var habit in habits) {
+      if (habit.lastCompletedDate != today) {
+        if (habit.completed) {
+          habit.completed = false;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      saveHabits();
+    }
   }
 
   int completedHabitsCount() {
