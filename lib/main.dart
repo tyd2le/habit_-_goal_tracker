@@ -5,6 +5,16 @@ void main() {
   runApp(const HabitApp());
 }
 
+class Habit {
+  String name;
+  bool completed;
+
+  Habit({
+    required this.name,
+    this.completed = false,
+  });
+}
+
 class HabitApp extends StatelessWidget {
   const HabitApp({super.key});
 
@@ -29,7 +39,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> habits = [];
+  List<Habit> habits = [];
 
   final TextEditingController controller = TextEditingController();
 
@@ -39,35 +49,61 @@ class _HomePageState extends State<HomePage> {
     loadHabits();
   }
 
+  Future<void> saveHabits() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    List<String> savedHabits = habits.map((habit) {
+      return '${habit.name}|${habit.completed}';
+    }).toList();
+
+    await prefs.setStringList('habits', savedHabits);
+  }
+
   Future<void> loadHabits() async {
     final prefs = await SharedPreferences.getInstance();
 
-    setState(() {
-      habits = prefs.getStringList('habits') ?? [];
-    });
-  }
+    List<String> savedHabits =
+        prefs.getStringList('habits') ?? [];
 
-  Future<void> saveHabits() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('habits', habits);
+    setState(() {
+      habits = savedHabits.map((item) {
+        final parts = item.split('|');
+
+        return Habit(
+          name: parts[0],
+          completed: parts[1] == 'true',
+        );
+      }).toList();
+    });
   }
 
   void addHabit() {
     if (controller.text.trim().isEmpty) return;
 
     setState(() {
-      habits.add(controller.text.trim());
+      habits.add(
+        Habit(name: controller.text.trim()),
+      );
     });
 
     saveHabits();
 
     controller.clear();
+
     Navigator.pop(context);
   }
 
   void deleteHabit(int index) {
     setState(() {
       habits.removeAt(index);
+    });
+
+    saveHabits();
+  }
+
+  void toggleHabit(int index, bool? value) {
+    setState(() {
+      habits[index].completed = value ?? false;
     });
 
     saveHabits();
@@ -102,37 +138,82 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  int completedHabitsCount() {
+    return habits.where((habit) => habit.completed).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Habit Goal Tracker'),
       ),
-      body: habits.isEmpty
-          ? const Center(
-              child: Text(
-                'No habits yet',
-                style: TextStyle(fontSize: 20),
-              ),
-            )
-          : ListView.builder(
-              itemCount: habits.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    leading: const Icon(Icons.check_circle_outline),
-                    title: Text(habits[index]),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        deleteHabit(index);
-                      },
-                    ),
-                  ),
-                );
-              },
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(16),
             ),
+            child: Text(
+              'Completed today: '
+              '${completedHabitsCount()}/${habits.length}',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: habits.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No habits yet',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: habits.length,
+                    itemBuilder: (context, index) {
+                      final habit = habits[index];
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: habit.completed,
+                            onChanged: (value) {
+                              toggleHabit(index, value);
+                            },
+                          ),
+                          title: Text(
+                            habit.name,
+                            style: TextStyle(
+                              decoration: habit.completed
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              deleteHabit(index);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddHabitDialog,
         child: const Icon(Icons.add),
